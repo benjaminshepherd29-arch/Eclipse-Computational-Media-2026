@@ -2,11 +2,9 @@ import java.awt.Color;
 
 public class ImageWorker {
 	public static void main(String[] args) {
-		String path = "newyork2.jpg";
-		//String path2 = "newyork2.jpg";
+		String path = "newyork.jpg";
 		Picture a = new Picture(path);
-		Picture a_1 = setAllRed(a, 75);
-		//a.show();
+		Picture a_1 = ImageWorker.vividCool(a, 1);
 		a_1.show();
 	}
 	public static Picture setAllRed(Picture p, int red) {
@@ -231,33 +229,44 @@ public class ImageWorker {
 		
 		return output;
 	}
-	public static Picture vividCoolTint(Picture p, double gfactor, double m, double s) {
+	/**Applies a "vivid cool" transformation to the picture so that it is slightly tinted blue.
+	 * @param p - the picture
+	 * @param s - how blue the image will be
+	 */
+	public static Picture vividCool(Picture p, double s) {
 		Picture output = new Picture(p);
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
-				Color b = p.get(x, y);
 				//
-				double r = b.getRed()/255;
-				double g = b.getGreen()/255;
-				double bBlue = b.getBlue()/255;
-				double lum = 0.21 * r + 0.72 * g + 0.07 * bBlue;
+				Color pic = p.get(x, y);
+				int r = pic.getRed();
+				int g = pic.getGreen();
+				int b = pic.getBlue();
+				double luma = 0.299 * r + 0.587 * g + 0.114 * b;
 				//
-				double rviv = lum + s * (r - lum);
-				double gviv = lum + s * (g - lum);
-				double bviv = lum + s * (bBlue - lum);
+				double newr = luma + s * (r - luma);
+				double newg = luma + s * (g - luma);
+				double newb = luma + s * (b - luma);
 				//
-				double rs = (1)/(1+Math.exp(-1 * gfactor *(rviv - m)));
-				double gs = (1)/(1+Math.exp(-1 * gfactor *(gviv - m)));
-				double bsigmoid = (1)/(1+Math.exp(-1 * gfactor *(bviv - m)));
-				int rs_2 = 255*(int) Math.round(rs);
-				int gs_2 = 255*(int) Math.round(gs);
-				int bsigm_2 = 255*(int) Math.round(bsigmoid);
-				Color finalColor = new Color(rs_2, gs_2, bsigm_2);
+				double cr = 0.9 * newr - 5;
+				double cg = newg;
+				double cb = 1.2 * newb + 5;
+				//
+				double Finalr = Math.max(0, Math.min(255, cr));
+				double Finalg = Math.max(0, Math.min(255, cg));
+				double Finalb = Math.max(0, Math.min(255, cb));
+				//
+				int finalr = (int) Math.round(Finalr);
+				int finalg = (int) Math.round(Finalg);
+				int finalb = (int) Math.round(Finalb);
+				//
+				Color finalColor = new Color(finalr, finalg, finalb);
 				output.set(x, y, finalColor);
 			}
 		}
 		return output;
-	}
+	} 
+
 	/**Applies a blur to a picture by looking at "neighbor pixels" and averages/mixes their colors based on the gaussian distribution.
 	 * Formula: (tau*sigma^2)^-1 * exp(-(neighborpixeldistanceXaxis^2 + neighborpixeldistanceYaxis^2)/(2*sigma^2))
 	 * @param p - picture
@@ -268,24 +277,30 @@ public class ImageWorker {
 		int radius = sigma*3;
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
+				//
 				double totalR = 0;
 				double totalG = 0;
 				double totalB = 0;
 				double totalW = 0;
+				//
 				for (int dx = -radius; dx <= radius; dx++) {
 					for (int dy = -radius; dy <= radius; dy++) {
+						//
 						int tX = x + dx;
 						int tY = y + dy;
 						int cX = Math.max(0, Math.min(tX, p.width() - 1));
 						int cY = Math.max(0, Math.min(tY, p.height() - 1));
+						//
 						double gWeight = ((1.0)/(Math.TAU*sigma*sigma))*Math.exp(-(dx*dx+dy*dy)/(2*sigma*sigma));
 						Color a = p.get(cX, cY);
 						int r = a.getRed();
 						int g = a.getGreen();
 						int b = a.getBlue();
+						//
 						double newr = r * gWeight;
 						double newg = g * gWeight;
 						double newb = b * gWeight;
+						//
 						totalW += gWeight;
 						totalR += newr;
 						totalG += newg;
@@ -295,10 +310,11 @@ public class ImageWorker {
 					int newrk = (int) Math.round(totalR/totalW);
 					int newgk = (int) Math.round(totalG/totalW);
 					int newbk = (int) Math.round(totalB/totalW);
+					//
 					Color finalColor = new Color(newrk, newgk, newbk);
 					output.set(x, y, finalColor);
 					}
 				}
 		return output;
 	}
-} 
+}
