@@ -258,10 +258,14 @@ public class ImageWorker {
 		}
 		return output;
 	}
+	/**Applies a blur to a picture by looking at "neighbor pixels" and averages/mixes their colors based on the gaussian distribution.
+	 * Formula: (tau*sigma^2)^-1 * exp(-(neighborpixeldistanceXaxis^2 + neighborpixeldistanceYaxis^2)/(2*sigma^2))
+	 * @param p - picture
+	 * @param sigma - how blurred the picture is
+	 */
 	public static Picture gaussianBlur(Picture p, int sigma) {
 		Picture output = new Picture(p);
-		int radius = sigma*3;  
-		
+		int radius = sigma*3;
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
 				double totalR = 0;
@@ -270,9 +274,12 @@ public class ImageWorker {
 				double totalW = 0;
 				for (int dx = -radius; dx <= radius; dx++) {
 					for (int dy = -radius; dy <= radius; dy++) {
-						//clamp checks
+						int tX = x + dx;
+						int tY = y + dy;
+						int cX = Math.max(0, Math.min(tX, p.width() - 1));
+						int cY = Math.max(0, Math.min(tY, p.height() - 1));
 						double gWeight = ((1.0)/(Math.TAU*sigma*sigma))*Math.exp(-(dx*dx+dy*dy)/(2*sigma*sigma));
-						Color a = p.get(dx,dy);
+						Color a = p.get(cX, cY);
 						int r = a.getRed();
 						int g = a.getGreen();
 						int b = a.getBlue();
@@ -283,16 +290,15 @@ public class ImageWorker {
 						totalR += newr;
 						totalG += newg;
 						totalB += newb;
-						}
+							}
+						}	
+					int newrk = (int) Math.round(totalR/totalW);
+					int newgk = (int) Math.round(totalG/totalW);
+					int newbk = (int) Math.round(totalB/totalW);
+					Color finalColor = new Color(newrk, newgk, newbk);
+					output.set(x, y, finalColor);
 					}
-				int newrk = (int) Math.round(totalR/totalW);
-				int newgk = (int) Math.round(totalG/totalW);
-				int newbk = (int) Math.round(totalB/totalW);
-				Color finalColor = new Color(newrk, newgk, newbk);
-				output.set(x, y, finalColor);
 				}
-				
-			}
 		return output;
 	}
 } 
