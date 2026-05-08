@@ -3,11 +3,11 @@ import java.awt.Color;
 public class ImageWorker {
 	public static void main(String[] args) {
 		String path = "newyork2.jpg";
+		//String path2 = "newyork2.jpg";
 		Picture a = new Picture(path);
-		Picture a_1 = ImageWorker.mirrorOnDiag(a);
-		//String fileName = "reversedxnewyork2.jpg";
+		Picture a_1 = setAllRed(a, 75);
+		//a.show();
 		a_1.show();
-		
 	}
 	public static Picture setAllRed(Picture p, int red) {
 		Picture output = new Picture(p);
@@ -178,8 +178,121 @@ public class ImageWorker {
 				int avgBlue = (int) Math.round((aBlue + bBlue) / 2);
 				Color ColorC = new Color(avgRed, avgGreen, avgBlue);
 				c.set(x, y, ColorC);
-				return c;
+				
+			}
+		}
+		return c;
+	}
+	public static void placePicture(Picture p, Picture canvas, int firstx, int firsty) {
+		int x = (int) Math.round(firstx);
+		int y = (int) Math.round(firsty);
+		for (int r = 0; r < p.height(); r++) {
+			for (int c = 0; c < p.width(); c++) {
+				int dx = c + x;
+				int dy = r + y;
+				Color pS = p.get(c, r);
+				canvas.set(dx,dy,pS);
 			}
 		}
 	}
-}
+	/**
+	 * Applies a radial blur function calculated by summing up 	 from i=0 to n-1 and multiplying that by n^-1.
+	 * @param P = pixel coordinates on which the loop is being activated on
+	 * @param s = the weight (how close the blur is to center) of the final blur
+	 * @param n = number of times you want the program to sample. the more the blurrier and higher quality.
+	 * @param c_x = x coordinate of center of which the blur is being activated by
+	 * @param c_y = y coordinate of center of which the blur is being activated by 
+	 */
+	public static Picture radialBlur(Picture p, int s, int n, int c_x, int c_y) {
+		int totalred = 0;
+		int totalgreen = 0;
+		int totalblue = 0;
+		Picture output = new Picture(p);
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				for (int i = 0; i < n; i++) {	
+					int path_x = x+((s * i)/(n - 1) * (c_x - x));
+					int path_y = y+((s * i)/(n - 1) * (c_y - y));
+					Color b = p.get(path_x, path_y);
+					//getting data 
+					int bRed = b.getRed();
+					int bGreen = b.getGreen();
+					int bBlue = b.getBlue();
+					//adding data
+					totalred += bRed;
+					totalgreen += bGreen;
+					totalblue += bBlue;
+				}
+				Color finalColor = new Color((totalred/n), (totalgreen/n), (totalblue/n));
+				output.set(x,  y, finalColor);
+
+			}
+		}
+		
+		return output;
+	}
+	public static Picture vividCoolTint(Picture p, double gfactor, double m, double s) {
+		Picture output = new Picture(p);
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				Color b = p.get(x, y);
+				//
+				double r = b.getRed()/255;
+				double g = b.getGreen()/255;
+				double bBlue = b.getBlue()/255;
+				double lum = 0.21 * r + 0.72 * g + 0.07 * bBlue;
+				//
+				double rviv = lum + s * (r - lum);
+				double gviv = lum + s * (g - lum);
+				double bviv = lum + s * (bBlue - lum);
+				//
+				double rs = (1)/(1+Math.exp(-1 * gfactor *(rviv - m)));
+				double gs = (1)/(1+Math.exp(-1 * gfactor *(gviv - m)));
+				double bsigmoid = (1)/(1+Math.exp(-1 * gfactor *(bviv - m)));
+				int rs_2 = 255*(int) Math.round(rs);
+				int gs_2 = 255*(int) Math.round(gs);
+				int bsigm_2 = 255*(int) Math.round(bsigmoid);
+				Color finalColor = new Color(rs_2, gs_2, bsigm_2);
+				output.set(x, y, finalColor);
+			}
+		}
+		return output;
+	}
+	public static Picture gaussianBlur(Picture p, int sigma) {
+		Picture output = new Picture(p);
+		int radius = sigma*3;  
+		
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				double totalR = 0;
+				double totalG = 0;
+				double totalB = 0;
+				double totalW = 0;
+				for (int dx = -radius; dx <= radius; dx++) {
+					for (int dy = -radius; dy <= radius; dy++) {
+						//clamp checks
+						double gWeight = ((1.0)/(Math.TAU*sigma*sigma))*Math.exp(-(dx*dx+dy*dy)/(2*sigma*sigma));
+						Color a = p.get(dx,dy);
+						int r = a.getRed();
+						int g = a.getGreen();
+						int b = a.getBlue();
+						double newr = r * gWeight;
+						double newg = g * gWeight;
+						double newb = b * gWeight;
+						totalW += gWeight;
+						totalR += newr;
+						totalG += newg;
+						totalB += newb;
+						}
+					}
+				int newrk = (int) Math.round(totalR/totalW);
+				int newgk = (int) Math.round(totalG/totalW);
+				int newbk = (int) Math.round(totalB/totalW);
+				Color finalColor = new Color(newrk, newgk, newbk);
+				output.set(x, y, finalColor);
+				}
+				
+			}
+		return output;
+	}
+} 
