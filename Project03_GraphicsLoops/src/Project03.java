@@ -2,9 +2,9 @@ import java.awt.Color;
 
 public class ImageWorker {
 	public static void main(String[] args) {
-		String path = "newyork.jpg";
+		String path = "newyork2.jpg";
 		Picture a = new Picture(path);
-		Picture a_1 = ImageWorker.vividCool(a, 1);
+		Picture a_1 = ImageWorker.radialBlur(a, 0.02, 10, 800, 400);
 		a_1.show();
 	}
 	public static Picture setAllRed(Picture p, int red) {
@@ -201,32 +201,73 @@ public class ImageWorker {
 	 * @param c_x = x coordinate of center of which the blur is being activated by
 	 * @param c_y = y coordinate of center of which the blur is being activated by 
 	 */
-	public static Picture radialBlur(Picture p, int s, int n, int c_x, int c_y) {
-		int totalred = 0;
-		int totalgreen = 0;
-		int totalblue = 0;
+	public static Picture radialBlur(Picture p, double s, int n, int c_x, int c_y) {
 		Picture output = new Picture(p);
+		//
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
-				for (int i = 0; i < n; i++) {	
-					int path_x = x+((s * i)/(n - 1) * (c_x - x));
-					int path_y = y+((s * i)/(n - 1) * (c_y - y));
-					Color b = p.get(path_x, path_y);
-					//getting data 
-					int bRed = b.getRed();
-					int bGreen = b.getGreen();
-					int bBlue = b.getBlue();
-					//adding data
-					totalred += bRed;
-					totalgreen += bGreen;
-					totalblue += bBlue;
+				//
+				int dx = x - c_x;
+				int dy = y - c_y;
+				double d = Math.pow(dx*dx+dy*dy,(1.0/2.0));
+				//
+				if (d == 0) {
+					continue;
 				}
-				Color finalColor = new Color((totalred/n), (totalgreen/n), (totalblue/n));
-				output.set(x,  y, finalColor);
-
+				else {
+					double u_x = dx/d;
+					double u_y = dy/d;
+					double l = s * d;
+					//
+					int totalred = 0;
+					int totalgreen = 0;
+					int totalblue = 0;
+					for (int k = 0; k <= n; k++) {
+						if (n == 1) {
+						double t_k = -l + k * ((2.0*l)/(1.0));
+						double sx = x + t_k * u_x;
+						double sy = y + t_k * u_y;
+						double newsy = Math.max(0, Math.min(p.height() - 1, sy));
+						double newsx = Math.max(0, Math.min(p.width() - 1, sx));
+						int rsx = (int) Math.round(newsx);
+						int rsy = (int) Math.round(newsy);
+						Color a = p.get(rsx, rsy);
+						int rval = a.getRed();
+						int gval = a.getGreen();
+						int bval = a.getBlue();
+						totalred += rval;
+						totalgreen += gval;
+						totalblue += bval;	
+						}
+						else {
+							double t_k = -l + k * ((2.0*l)/(n-1.0));
+							double sx = x + t_k * u_x;
+							double sy = y + t_k * u_y;
+							double newsy = Math.max(0, Math.min(p.height() - 1, sy));
+							double newsx = Math.max(0, Math.min(p.width() - 1, sx));
+							int rsx = (int) Math.round(newsx);
+							int rsy = (int) Math.round(newsy);
+							Color a = p.get(rsx, rsy);
+							int rval = a.getRed();
+							int gval = a.getGreen();
+							int bval = a.getBlue();
+							totalred += rval;
+							totalgreen += gval;
+							totalblue += bval;	
+						}
+					}
+					double Finalr = Math.max(0, Math.min(255, (totalred/(n+1.0))));
+					double Finalg = Math.max(0, Math.min(255, (totalgreen/(n+1.0))));
+					double Finalb = Math.max(0, Math.min(255, (totalblue/(n+1.0))));
+					int finalr = (int) Math.round(Finalr);
+					int finalg = (int) Math.round(Finalg);
+					int finalb = (int) Math.round(Finalb);
+					Color finalColor = new Color(finalr, finalg, finalb);
+					output.set(x, y, finalColor);
+				}
+				
 			}
 		}
-		
 		return output;
 	}
 	/**Applies a "vivid cool" transformation to the picture so that it is slightly tinted blue.
