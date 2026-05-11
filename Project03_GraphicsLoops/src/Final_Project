@@ -1,0 +1,62 @@
+public class Final_Project {
+	public static void main(String[] args) {
+			//configuring and saving the new images
+				String path = "lafinalproject.jpg";
+				String path1 = "miamifinalproject.jpg";
+				String path2 = "shanghaifinalproject.jpg";
+				String path3 = "singaporefinalproject.jpg";
+				Picture a = new Picture(path);
+				Picture b = new Picture(path1);
+				Picture c = new Picture(path2);
+				Picture d = new Picture(path3);
+				Picture a_1 = ImageWorker.imageResizer(a, 300, 240);
+				Picture b_1 = ImageWorker.imageResizer(b, 300, 240);
+				Picture c_1 = ImageWorker.imageResizer(c, 300, 240);
+				Picture d_1 = ImageWorker.imageResizer(d, 300, 240);
+				a_1.save("finalLA.jpg");
+				b_1.save("finalMiami.jpg");
+				c_1.save("finalShanghai.jpg");
+				d_1.save("finalSingapore.jpg");
+				//canvas setup - unmodified pictures placement
+				Picture canvas = new Picture(1200, 960);
+				ImageWorker.placePicture(a_1, canvas, 0, 0);
+				ImageWorker.placePicture(b_1, canvas, 300, 0);
+				ImageWorker.placePicture(c_1, canvas, 600, 0);
+				ImageWorker.placePicture(d_1, canvas, 900, 0);
+				//canvas setup - vividcool pictures placement
+				Picture a_2 = ImageWorker.vividCool(a_1, 2.5);
+				Picture b_2 = ImageWorker.vividCool(b_1, 2.5);
+				Picture c_2 = ImageWorker.vividCool(c_1, 2.5);
+				Picture d_2 = ImageWorker.vividCool(d_1, 2.5);
+				Picture a_3 = ImageWorker.gaussianBlur(a_2, 3);
+				Picture b_3 = ImageWorker.gaussianBlur(b_2, 3);
+				Picture c_3 = ImageWorker.gaussianBlur(c_2, 3);
+				Picture d_3 = ImageWorker.gaussianBlur(d_2, 3);
+				ImageWorker.placePicture(a_3, canvas, 0, 240);
+				ImageWorker.placePicture(b_3, canvas, 300, 240);
+				ImageWorker.placePicture(c_3, canvas, 600, 240);
+				ImageWorker.placePicture(d_3, canvas, 900, 240);
+				//canvas setup - vividwarm pictures placement
+				Picture a_4 = ImageWorker.redTint(a_1);
+				Picture b_4 = ImageWorker.redTint(b_1);
+				Picture c_4 = ImageWorker.redTint(c_1);
+				Picture d_4 = ImageWorker.redTint(d_1);
+				ImageWorker.placePicture(a_4, canvas, 0, 480);
+				ImageWorker.placePicture(b_4, canvas, 300, 480);
+				ImageWorker.placePicture(c_4, canvas, 600, 480);
+				ImageWorker.placePicture(d_4, canvas, 900, 480);
+				//canvas setup - grayscale pictures placement
+				Picture a_5 = ImageWorker.makeGrayscale(a_1);
+				Picture b_5 = ImageWorker.makeGrayscale(b_1);
+				Picture c_5 = ImageWorker.makeGrayscale(c_1);
+				Picture d_5 = ImageWorker.makeGrayscale(d_1);
+				ImageWorker.placePicture(a_5, canvas, 0, 720);
+				ImageWorker.placePicture(b_5, canvas, 300, 720);
+				ImageWorker.placePicture(c_5, canvas, 600, 720);
+				ImageWorker.placePicture(d_5, canvas, 900, 720);
+				//effects - light radial blur #1 for a "shake" effect
+				Picture canvas_1 = ImageWorker.radialBlur(canvas, 0.0007, 3, 1200, 960);
+				canvas_1.save("finalproject.jpg");
+				canvas_1.show();
+	}
+}
