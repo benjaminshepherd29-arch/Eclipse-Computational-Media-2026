@@ -1,11 +1,8 @@
-import java.awt.Color;
+import java.awt.Color;  
 
 public class ImageWorker {
 	public static void main(String[] args) {
-		String path = "newyork2.jpg";
-		Picture a = new Picture(path);
-		Picture a_1 = ImageWorker.radialBlur(a, 0.02, 10, 800, 400);
-		a_1.show();
+		
 	}
 	public static Picture setAllRed(Picture p, int red) {
 		Picture output = new Picture(p);
@@ -150,8 +147,8 @@ public class ImageWorker {
 	}
 	public static Picture mirrorOnDiag(Picture p) {
 		Picture output = new Picture(p);
-		for (int y = 0; y < (p.height() - 1); y++) {
-			for (int x = 0; x < (p.width() - 1); x++) {
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
 				Color c = output.get(x, y);
 				output.set(y, x, c);
 				}
@@ -160,7 +157,6 @@ public class ImageWorker {
 	}
 	public static Picture averagePictures(Picture a, Picture b) {
 		Picture c = new Picture(a);
-		//define arrays w/ color data on each pixel and average those, return the answer
 		for (int y = 0; y < a.height(); y++) {
 			for (int x = 0; x < a.height(); x++) {
 				Color a_1 = a.get(x, y);
@@ -189,12 +185,14 @@ public class ImageWorker {
 				int dx = c + x;
 				int dy = r + y;
 				Color pS = p.get(c, r);
-				canvas.set(dx,dy,pS);
+				int newdx = Math.max(0, Math.min(canvas.width() - 1, dx));
+				int newdy = Math.max(0, Math.min(canvas.height() - 1, dy));
+				canvas.set(newdx,newdy,pS);
 			}
 		}
 	}
 	/**
-	 * Applies a radial blur function calculated by summing up 	 from i=0 to n-1 and multiplying that by n^-1.
+	 * Applies a radial blur function
 	 * @param P = pixel coordinates on which the loop is being activated on
 	 * @param s = the weight (how close the blur is to center) of the final blur
 	 * @param n = number of times you want the program to sample. the more the blurrier and higher quality.
@@ -289,9 +287,9 @@ public class ImageWorker {
 				double newg = luma + s * (g - luma);
 				double newb = luma + s * (b - luma);
 				//
-				double cr = 0.9 * newr - 5;
+				double cr = 0.85 * newr - 8;
 				double cg = newg;
-				double cb = 1.2 * newb + 5;
+				double cb = 1.3 * newb + 10;
 				//
 				double Finalr = Math.max(0, Math.min(255, cr));
 				double Finalg = Math.max(0, Math.min(255, cg));
@@ -315,7 +313,7 @@ public class ImageWorker {
 	 */
 	public static Picture gaussianBlur(Picture p, int sigma) {
 		Picture output = new Picture(p);
-		int radius = sigma*3;
+		int radius = sigma;
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
 				//
@@ -356,6 +354,125 @@ public class ImageWorker {
 					output.set(x, y, finalColor);
 					}
 				}
+		return output;
+	}
+	public static Picture imageResizer(Picture p, int nWidth, int nHeight) {
+		Picture output = new Picture(nWidth, nHeight);
+		double deltaX = p.width() * 1.0/nWidth;
+		double deltaY = p.height() * 1.0/nHeight;
+		for (int y = 0; y < output.height(); y++) {
+			for (int x = 0; x < output.width(); x++) {
+				int targetX = (int) (deltaX * x);
+				int targetY = (int) (deltaY * y);
+				Color c = p.get(targetX, targetY);
+				output.set(x, y, c);
+			}
+		}
+		return output;
+	}
+	public static Picture imageTurner90(Picture p) {
+	Picture output = new Picture(p);
+	for (int y = 0; y < p.height(); y++) {
+		for (int x = 0; x < p.width(); x++) {
+			Color a = p.get(x, y);
+			output.set(y, x, a);
+		}
+	}
+	return output;
+	}
+	public static Picture warmTint(Picture p) {	
+		Picture output = new Picture(p);
+		double roffset = 6;
+		double goffset = 2;
+		double boffset = -6;
+		double s = 1.6;
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				Color a = p.get(x,y);
+				int r = a.getRed();
+				int g = a.getGreen();
+				int b = a.getBlue();
+				double lum = 0.299 * r + 0.587 * g + 0.114 * b;
+				double yr = lum + s * (r - lum) + roffset;
+				double yg = lum + s * (g - lum) + goffset;
+				double yb = lum + s * (b - lum) + boffset;
+				double doublefinalr = Math.max(0, Math.min(yr, 255));
+				double doublefinalg = Math.max(0, Math.min(yg, 255));
+				double doublefinalb = Math.max(0, Math.min(yb, 255));
+				int finalr = (int) Math.round(doublefinalr);
+				int finalg = (int) Math.round(doublefinalg);
+				int finalb = (int) Math.round(doublefinalb);
+				Color finalColor = new Color(finalr, finalg, finalb);
+				output.set(x, y, finalColor); 
+			}
+		}
+		return output;
+	}
+	public static Picture forestTint(Picture p) {
+		Picture output = new Picture(p);
+		double roffset = -3;
+		double goffset = 5;
+		double boffset = -3;
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				Color a = p.get(x, y);
+				int fr = a.getRed();
+				int fg = a.getGreen();
+				int fb = a.getBlue();
+				double nextr = 0.5 * fr + roffset;
+				double nextg = 1.18 * fg + goffset;
+				double nextb = 0.75 * fb + boffset;
+				int finalr = (int) Math.round(Math.max(0, Math.min(nextr, 255)));
+				int finalg = (int) Math.round(Math.max(0, Math.min(nextg, 255)));
+				int finalb = (int) Math.round(Math.max(0, Math.min(nextb, 255)));
+				Color finalColor = new Color(finalr, finalg, finalb);
+				output.set(x, y, finalColor);
+			}
+		}
+		return output;
+	}
+	public static Picture redTint(Picture p) {
+		Picture output = new Picture(p);
+		double roffset = 5;
+		double goffset = -3;
+		double boffset = -3;
+		for (int y = 0; y < p.height(); y++) {
+			for (int x = 0; x < p.width(); x++) {
+				Color a = p.get(x, y);
+				int fr = a.getRed();
+				int fg = a.getGreen();
+				int fb = a.getBlue();
+				double nextr = 1.18 * fr + roffset;
+				double nextg = 0.75 * fg + goffset;
+				double nextb = 0.75 * fb + boffset;
+				int finalr = (int) Math.round(Math.max(0, Math.min(nextr, 255)));
+				int finalg = (int) Math.round(Math.max(0, Math.min(nextg, 255)));
+				int finalb = (int) Math.round(Math.max(0, Math.min(nextb, 255)));
+				Color finalColor = new Color(finalr, finalg, finalb);
+				output.set(x, y, finalColor);
+			}
+		}
+		return output;
+	}
+	public static Picture duotone(Picture p, int r1, int g1, int b1, int r2, int g2, int b2) {
+		Picture output = new Picture(p);
+		for (int x = 0; x < p.width(); x++) {
+			for (int y = 0; y < p.height(); y++) {
+				Color a = p.get(x, y);
+				int r = a.getRed();
+				int g = a.getGreen();
+				int b = a.getBlue();
+				double monolum = (0.299 * r + 0.587 * g + 0.114 * b)/(255.0);
+				double rprime = monolum * r1 + (1 - monolum) * r2;	
+				double gprime = monolum * g1 + (1 - monolum) * g2;	
+				double bprime = monolum * b1 + (1 - monolum) * b2;
+				int finalr = (int) Math.round(rprime);
+				int finalg = (int) Math.round(gprime);
+				int finalb = (int) Math.round(bprime);
+				Color finalColor = new Color(finalr, finalg, finalb);
+				output.set(x, y, finalColor);
+			}
+		}
 		return output;
 	}
 }
