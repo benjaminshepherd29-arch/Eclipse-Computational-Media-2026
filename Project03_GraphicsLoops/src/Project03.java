@@ -483,11 +483,39 @@ public class ImageWorker {
 	}
 	public static Picture seamCarve(Picture p) {
 		Picture output = new Picture(p);
-		int totalleftedgecase = 0;
-		int totalrightedgecase = 0;
+		int total = p.width();
+		double[] totalpath = new double[total];
 		for (int y = 0; y < p.height(); y++) {
 			for (int x = 0; x < p.width(); x++) {
 				if (x == 0 && y == 0)  {
+					int pixenergy = 0;
+					continue;
+				}
+				else if (x == 0) {
+					//horizontal gradient
+					Color a1 = p.get(Math.max(0, Math.min(p.width(), (x + 1))), Math.max(0, Math.min(p.height(), y - 1)));
+					int r = a1.getRed();
+					int g = a1.getGreen();
+					int b = a1.getBlue();
+					//
+					Color a2 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), y - 1)));
+					int r1 = a2.getRed();
+					int g1 = a2.getGreen();
+					int b1 = a2.getBlue();
+					//
+					int horGradR = r - r1;
+					int horGradG = g - g1;
+					int horGradB = b - b1;
+					double gradX = Math.pow((horGradR * horGradR + horGradG * horGradG + horGradB * horGradB), (1.0/2.0));
+					//vertical gradient
+					int vertGradR = r - r1;
+					int vertGradG = g - g1;
+					int vertGradB = b - b1;
+					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
+					//
+					double pixenergy = gradX * gradX + gradY * gradY;
+				}
+				else if (y == 0) {
 					//horizontal gradient
 					Color a1 = p.get(Math.max(0, Math.min(p.width(), (x + 1))), Math.max(0, Math.min(p.height(), y)));
 					int r = a1.getRed();
@@ -514,29 +542,140 @@ public class ImageWorker {
 					int g3 = a4.getGreen();
 					int b3 = a4.getBlue();
 					//
+					int vertGradR = r2 - r3;
+					int vertGradG = g2 - g3;
+					int vertGradB = b2 - b3;
+					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
+					//
+					double pixenergy = gradX * gradX + gradY * gradY;
+				}
+				else if (x == (p.width() - 1)) {
+					//horizontal gradient
+					Color a1 = p.get(Math.max(0, Math.min(p.width(), (x - 1))), Math.max(0, Math.min(p.height(), y - 1)));
+					int r = a1.getRed();
+					int g = a1.getGreen();
+					int b = a1.getBlue();
+					//
+					Color a2 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), y - 1)));
+					int r1 = a2.getRed();
+					int g1 = a2.getGreen();
+					int b1 = a2.getBlue();
+					//
+					int horGradR = r - r1;
+					int horGradG = g - g1;
+					int horGradB = b - b1;
+					double gradX = Math.pow((horGradR * horGradR + horGradG * horGradG + horGradB * horGradB), (1.0/2.0));
+					//vertical gradient
 					int vertGradR = r - r1;
 					int vertGradG = g - g1;
 					int vertGradB = b - b1;
 					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
 					//
-					double ogpixenergy = gradX * gradX + gradY * gradY;
-				}
-				else if (x == 0) {
-					
-				}
-				else if (y == 0) {
-					
-				}
-				else if (x == (p.width() - 1)) {
-					
+					double pixenergy = gradX * gradX + gradY * gradY;
 				}
 				else if (y == p.height() - 1) {
-					
+					//horizontal gradient
+					Color a1 = p.get(Math.max(0, Math.min(p.width(), (x + 1))), Math.max(0, Math.min(p.height(), y)));
+					int r = a1.getRed();
+					int g = a1.getGreen();
+					int b = a1.getBlue();
+					//
+					Color a2 = p.get(Math.max(0, Math.min(p.width(), (x - 1))), Math.max(0, Math.min(p.height(), y)));
+					int r1 = a2.getRed();
+					int g1 = a2.getGreen();
+					int b1 = a2.getBlue();
+					//
+					int horGradR = r - r1;
+					int horGradG = g - g1;
+					int horGradB = b - b1;
+					double gradX = Math.pow((horGradR * horGradR + horGradG * horGradG + horGradB * horGradB), (1.0/2.0));
+					//vertical gradient
+					Color a3 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y + 1))));
+					int r2 = a3.getRed();
+					int g2 = a3.getGreen();
+					int b2 = a3.getBlue();
+					//
+					Color a4 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y - 1))));
+					int r3 = a4.getRed();
+					int g3 = a4.getGreen();
+					int b3 = a4.getBlue();
+					//
+					int vertGradR = r2 - r3;
+					int vertGradG = g2 - g3;
+					int vertGradB = b2 - b3;
+					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
+					//
+					double pixenergy = gradX * gradX + gradY * gradY;
 				}
-				else if (x == p.width()- 1 && y == p.height() - 1) {
-					
+				else if (x == p.width() - 1 && y == p.height() - 1) {
+					//horizontal gradient
+					Color a1 = p.get(p.width() - 2, p.height() - 2);
+					int r = a1.getRed();
+					int g = a1.getGreen();
+					int b = a1.getBlue();
+					//
+					Color a2 = p.get(p.width() - 1, p.height() - 2);
+					int r1 = a2.getRed();
+					int g1 = a2.getGreen();
+					int b1 = a2.getBlue();
+					//
+					int horGradR = r - r1;
+					int horGradG = g - g1;
+					int horGradB = b - b1;
+					double gradX = Math.pow((horGradR * horGradR + horGradG * horGradG + horGradB * horGradB), (1.0/2.0));
+					//vertical gradient
+					Color a3 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y + 1))));
+					int r2 = a3.getRed();
+					int g2 = a3.getGreen();
+					int b2 = a3.getBlue();
+					//
+					Color a4 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y - 1))));
+					int r3 = a4.getRed();
+					int g3 = a4.getGreen();
+					int b3 = a4.getBlue();
+					//
+					int vertGradR = r2 - r3;
+					int vertGradG = g2 - g3;
+					int vertGradB = b2 - b3;
+					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
+					//
+					double pixenergy = gradX * gradX + gradY * gradY;
+					pixenergy[]
 				}
 				else {
+					//horizontal gradient
+					Color a1 = p.get(Math.max(0, Math.min(p.width(), (x + 1))), Math.max(0, Math.min(p.height(), y)));
+					int r = a1.getRed();
+					int g = a1.getGreen();
+					int b = a1.getBlue();
+					//
+					Color a2 = p.get(Math.max(0, Math.min(p.width(), (x - 1))), Math.max(0, Math.min(p.height(), y)));
+					int r1 = a2.getRed();
+					int g1 = a2.getGreen();
+					int b1 = a2.getBlue();
+					//
+					int horGradR = r - r1;
+					int horGradG = g - g1;
+					int horGradB = b - b1;
+					double gradX = Math.pow((horGradR * horGradR + horGradG * horGradG + horGradB * horGradB), (1.0/2.0));
+					//vertical gradient
+					Color a3 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y + 1))));
+					int r2 = a3.getRed();
+					int g2 = a3.getGreen();
+					int b2 = a3.getBlue();
+					//
+					Color a4 = p.get(Math.max(0, Math.min(p.width(), (x))), Math.max(0, Math.min(p.height(), (y - 1))));
+					int r3 = a4.getRed();
+					int g3 = a4.getGreen();
+					int b3 = a4.getBlue();
+					//
+					int vertGradR = r2 - r3;
+					int vertGradG = g2 - g3;
+					int vertGradB = b2 - b3;
+					double gradY = Math.pow((vertGradR * vertGradR + vertGradG * vertGradG + vertGradB * vertGradB), (1.0/2.0));
+					//
+					double pixenergy = gradX * gradX + gradY * gradY;
+					pixenergy += totalpath[total];
 					
 				}
 				
